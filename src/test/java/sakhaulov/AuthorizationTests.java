@@ -15,7 +15,7 @@ public class AuthorizationTests extends AbstractTest{
     void authWrongPassTest() {
 
         getDriver().navigate().to("https://www.atlassian.com/");
-        WebElement webElement = getDriver().findElement(By.id(".//span[contains(text(), 'My account')]"));
+        WebElement webElement = getDriver().findElement(By.xpath(".//span[contains(text(), 'My account')]"));
         webElement.click();
         webElement = getDriver().findElement(By.xpath(".//span[contains(text(), 'Log in')]"));
         webElement.click();

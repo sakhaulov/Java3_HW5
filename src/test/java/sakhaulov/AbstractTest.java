@@ -29,12 +29,10 @@ public abstract class AbstractTest {
 //                              "Страница не доступна");
 //    }
 
-
     @AfterAll
     public static void closeDriver() {
-        //driver.quit();
+        driver.quit();
     }
-
 
     public static WebDriver getDriver() {
         return driver;
