@@ -1,15 +1,8 @@
 package sakhaulov;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -27,9 +20,9 @@ public class JiraTests extends AbstractTest {
         Actions auth = new Actions(getDriver());
 
         auth.sendKeys(getDriver().findElement(By.name("username")), "timur.sakhaulov@gmail.com")
-                .pause(1000l)
+                .pause(1000L)
                 .click(getDriver().findElement(By.cssSelector("span.css-19r5em7")))
-                .pause(1000l)
+                .pause(1000L)
                 .sendKeys(getDriver().findElement(By.id("password")), "TestSakhaulov2022")
                 .click(getDriver().findElement(By.id("login-submit")))
                 .build()
@@ -42,111 +35,130 @@ public class JiraTests extends AbstractTest {
                               "Ошибка авторизации");
     }
 
-    @Test
-    @Disabled
-    void authValidDataTest() {
-        System.out.println("Lol");
-    }
 
     @Test
-    void createBugTest() {
+    @DisplayName("Переход на доску проекта")
+    void visitProjectBoard() {
 
         getDriver().navigate().to("https://start.atlassian.com/");
 
-            //Products page
+        //Products page
         WebElement webElement = getDriver().findElement(By.xpath(".//div[contains(text(), 'tsakhaulov')]"));
         webElement.click();
 
-            //Projects page
-            webElement = getDriver().findElement(By.xpath(".//span[contains(text(), 'sakhaulov')]"));
-            webElement.click();
+        //Projects page
+        webElement = getDriver().findElement(By.xpath(".//span[contains(text(), 'sakhaulov')]"));
+        webElement.click();
 
-            //Products page
-            new WebDriverWait(getDriver(), Duration.ofSeconds(5)).
-                    until(ExpectedConditions.
-                            visibilityOfElementLocated(By.id("createGlobalItem")));
+        //Projects page | Content assertion
+        List<WebElement> webElements = getDriver().findElements(By.xpath(".//h1[contains(text(), 'SAKH board')]"));
+        Assertions.assertTrue(webElements.size() > 0);
+    }
 
-            webElement = getDriver().findElement(By.xpath(".//button[@id='createGlobalItem']"));
-            webElement.click();
 
-            //Create issue modal window
-            webElement = getDriver().findElement(By.id("issue-create.ui.modal.create-form.type-picker.issue-type-select"));
-            webElement.click();
-            webElement = getDriver().findElement(By.xpath(".//div[@id='issue-create.ui.modal.create-form.type-picker.issue-type-select']/*/div[contains(.,'Bug')]"));
-            webElement.click();
-            webElement = getDriver().findElement(By.id("summary-field"));
-            webElement.sendKeys("MyTestBug");
-            webElement = getDriver().findElement(By.xpath(".//button[@data-testid='issue-create.ui.modal.footer.create-button']"));
-            webElement.click();
+    @Test
+    @DisplayName("Создание баг-репорта")
+    void createBugTest() {
 
-            //Check fo pop-up
-            List<WebElement> webElements = getDriver().findElements(By.cssSelector(".css-1do2z69"));
-            if (webElements.size() > 0) {
-                System.out.println("Test success");
-            } else {
-                System.out.println("Test fail");
-            }
+        getDriver().navigate().to("https://tsakhaulov.atlassian.net/jira/software/projects/SAKH/boards/1");
+
+        //Products page
+        new WebDriverWait(getDriver(), Duration.ofSeconds(5)).
+                until(ExpectedConditions.visibilityOfElementLocated(By.id("createGlobalItem")));
+
+        WebElement webElement = getDriver().findElement(By.xpath(".//button[@id='createGlobalItem']"));
+        webElement.click();
+
+        String bugReportName = "MyTestBugAutomated" + (int)(Math.random() * (1000 - 1)) + 1;
+
+        //Create issue modal window
+        Actions enterData = new Actions(getDriver());
+        enterData.click(getDriver().findElement(By.id("issue-create.ui.modal.create-form.type-picker.issue-type-select")))
+                .click(getDriver().findElement(By.xpath(".//div[@id='issue-create.ui.modal.create-form.type-picker.issue-type-select']/*/div[contains(.,'Bug')]")))
+                .sendKeys(getDriver().findElement(By.id("summary-field")),bugReportName)
+                .build()
+                .perform();
+
+        webElement = getDriver().findElement(By.xpath(".//button[@data-testid='issue-create.ui.modal.footer.create-button']"));
+        webElement.click();
+
+        //Check fo pop-up
+        Assertions.assertEquals(1, getDriver().findElements(By.cssSelector(".css-1do2z69")).size(), "Не обнаружено всплывающее окно с сообщением о создании баг-репорта");
+        //Check if element present on "backlog" page
+        webElement = getDriver().findElement(By.xpath(".//a[@data-test-id='navigation-apps-sidebar-next-gen.ui.menu.software-backlog-link']"));
+        webElement.click();
+        Assertions.assertTrue(getDriver().findElements(By.xpath(String.format(".//div[contains(text(), '%s')]", bugReportName))).size() > 1);
 
     }
 
+
     @Test
-    @Disabled
-    public static void visitProjectBoard() {
+    @DisplayName("Создание команды")
+    void startTeamTest() throws InterruptedException {
+        getDriver().navigate().to("https://tsakhaulov.atlassian.net/jira/software/projects/SAKH/boards/1");
+        Thread.sleep(2000);
 
-        /*
-        System.setProperty(
-                "webdriver.chrome.driver",
-                "src/main/resources/chromedriver");
-         */
+        //Products page
+        WebElement webElement = getDriver().findElement(By.xpath(".//*[@data-testid='menu-people-primary-button']"));
+        webElement.click();
+        webElement = getDriver().findElement(By.xpath(".//*[@data-testid='menu-view-people-directory']"));
+        webElement.click();
 
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--incognito");
-        //options.addArguments("--headless");
-        options.addArguments("start-maximized");
+        //Team management page
+        webElement = getDriver().findElement(By.xpath(".//*[@data-test-selector='create-team-button']"));
+        webElement.click();
 
-        WebDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(3));
-        driver.get("https://www.atlassian.com");
+        //Start a team modal window
+        String teamName = "MyTestTeamAutomated" + (int)(Math.random() * (1000 - 1)) + 1;
 
-        try {
-            //Authorization
-            //Index page
-            WebElement webElement = driver.findElement(By.xpath(".//span[contains(text(),'My account')]"));
-            webElement.click();
-            webElement = driver.findElement(By.xpath(".//span[contains(text(), 'Log in')]"));
-            webElement.click();
+        webElement = getDriver().findElement(By.name("teamName"));
+        webElement.sendKeys(teamName);
+        webElement = getDriver().findElement(By.xpath(".//span[contains(text(), 'Start team')]"));
+        webElement.click();
 
-            //Authorization form
-            webElement = driver.findElement(By.name("username"));
-            webElement.sendKeys("timur.sakhaulov@gmail.com");
-            webElement = driver.findElement(By.cssSelector("span.css-19r5em7"));
-            webElement.click();
-            webElement = driver.findElement(By.id("password"));
-            webElement.sendKeys("TestSakhaulov2022");
-            webElement = driver.findElement(By.id("login-submit"));
-            webElement.click();
-            //Authorization end
+        //Close "get started" modal window
+        getDriver().switchTo().activeElement();
+        getDriver().findElement(By.cssSelector(".css-eubphy")).click();
 
-            //Products page
-            webElement = driver.findElement(By.xpath(".//div[contains(text(), 'tsakhaulov')]"));
-            webElement.click();
+        //Assertions
+        Assertions.assertTrue(getDriver()
+                .findElements(By.xpath(String.format("//*[contains(text(), '%s')]", teamName))).size() > 0);
 
-            //Projects page
-            webElement = driver.findElement(By.xpath(".//span[contains(text(), 'sakhaulov')]"));
-            webElement.click();
+    }
 
-            //Projects page
-            List<WebElement> webElements = driver.findElements(By.xpath(".//h1[contains(text(), 'SAKH board')]"));
-            if (webElements.size() > 0) {
-                System.out.println("Test success");
-            } else {
-                System.out.println("Test fail");
-            }
 
-        } finally {
-            driver.quit();
-        }
+    @Test
+    @DisplayName("Создание собственного типа документа")
+    void addingStandartIssueTypeTest() throws InterruptedException {
+        getDriver().navigate().to("https://tsakhaulov.atlassian.net/jira/software/projects/SAKH/boards/1");
+        Thread.sleep(2000);
+
+        //Settings menu
+        WebElement webElement = getDriver().findElement(By.xpath(".//*[@aria-label='Settings']"));
+        webElement.click();
+        webElement = getDriver().findElement(By.partialLinkText("Issues"));
+        webElement.click();
+
+        //Issue types page
+        webElement = getDriver()
+                .findElement(By.xpath("//*[@data-testid='admin-pages-issue-types-directory.ui.header-actions.add-issue-type-button']"));
+        webElement.click();
+
+        //Add issue type modal window
+        Thread.sleep(2000);
+        String testIssueTypeName = "TestIssueType" + (int) (Math.random() * (1000 - 1)) + 1;
+
+        webElement = getDriver().findElement(By.name("name"));
+        webElement.sendKeys(testIssueTypeName);
+        webElement = getDriver().findElement(By.xpath("//*[contains(text(), 'Standard Issue Type')]"));
+        webElement.click();
+        webElement = getDriver().findElement(By.xpath(".//button[@type='submit']"));
+        webElement.click();
+
+        //Assertions
+        Assertions.assertTrue(getDriver()
+                .findElements(By.xpath(String.format(".//strong[contains(.,'%s')]", testIssueTypeName))).size() > 0);
 
     }
 }
+
