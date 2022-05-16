@@ -11,6 +11,10 @@ import java.time.Duration;
 
 public class AuthorizationTests extends AbstractTest{
 
+    static final String LOGIN = "timur.sakhaulov@gmail.com";
+    static final String PASSWORD = "TestSakhaulov2022";
+    static final String WRONG_PASSWORD = "TestSakhaulov202";
+
     @Test
     void authWrongPassTest() {
 
@@ -21,11 +25,11 @@ public class AuthorizationTests extends AbstractTest{
         webElement.click();
         Actions auth = new Actions(getDriver());
 
-        auth.sendKeys(getDriver().findElement(By.name("username")), "timur.sakhaulov@gmail.com")
+        auth.sendKeys(getDriver().findElement(By.name("username")), LOGIN)
                 .pause(1000L)
                 .click(getDriver().findElement(By.cssSelector("span.css-19r5em7")))
                 .pause(1000L)
-                .sendKeys(getDriver().findElement(By.id("password")), "TestSakhaulov202")
+                .sendKeys(getDriver().findElement(By.id("password")), WRONG_PASSWORD)
                 .click(getDriver().findElement(By.id("login-submit")))
                 .build()
                 .perform();

@@ -12,6 +12,9 @@ import java.util.List;
 
 public class JiraTests extends AbstractTest {
 
+    static final String LOGIN = "timur.sakhaulov@gmail.com";
+    static final String PASSWORD = "TestSakhaulov2022";
+
     @BeforeAll
     static void authorize() {
 
@@ -19,11 +22,11 @@ public class JiraTests extends AbstractTest {
         new WebDriverWait(getDriver(), Duration.ofSeconds(5));
         Actions auth = new Actions(getDriver());
 
-        auth.sendKeys(getDriver().findElement(By.name("username")), "timur.sakhaulov@gmail.com")
+        auth.sendKeys(getDriver().findElement(By.name("username")), LOGIN)
                 .pause(1000L)
                 .click(getDriver().findElement(By.cssSelector("span.css-19r5em7")))
                 .pause(1000L)
-                .sendKeys(getDriver().findElement(By.id("password")), "TestSakhaulov2022")
+                .sendKeys(getDriver().findElement(By.id("password")), PASSWORD)
                 .click(getDriver().findElement(By.id("login-submit")))
                 .build()
                 .perform();
@@ -31,7 +34,7 @@ public class JiraTests extends AbstractTest {
         //Products page | Authorization assertion
         new WebDriverWait(getDriver(), Duration.ofSeconds(3))
                 .until(ExpectedConditions.urlContains("https://start.atlassian.com/"));
-        Assertions.assertTrue(getDriver().findElements(By.xpath(".//*[contains(text(), 'sakhaulov')]")).size() != 0,
+        Assertions.assertTrue(getDriver().findElements(By.xpath(".//*[contains(text(), 'sakhaulov')]")).size() > 0,
                               "Ошибка авторизации");
     }
 
@@ -87,7 +90,8 @@ public class JiraTests extends AbstractTest {
         //Check if element present on "backlog" page
         webElement = getDriver().findElement(By.xpath(".//a[@data-test-id='navigation-apps-sidebar-next-gen.ui.menu.software-backlog-link']"));
         webElement.click();
-        Assertions.assertTrue(getDriver().findElements(By.xpath(String.format(".//div[contains(text(), '%s')]", bugReportName))).size() > 1);
+        new WebDriverWait(getDriver(), Duration.ofSeconds(5)).until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[contains(text(), 'MyTestBugAutomated')]")));
+        Assertions.assertTrue(getDriver().findElements(By.xpath(String.format(".//div[contains(text(), '%s')]", bugReportName))).size() > 0);
 
     }
 
